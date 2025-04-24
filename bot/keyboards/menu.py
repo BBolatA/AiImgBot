@@ -1,7 +1,6 @@
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from aiogram.types import ReplyKeyboardMarkup, WebAppInfo
-
-BASE_URL = "https://97ee-95-59-212-171.ngrok-free.app"
+from django.conf import settings
 
 
 def main_menu(user_id: int) -> ReplyKeyboardMarkup:
@@ -14,7 +13,7 @@ def main_menu(user_id: int) -> ReplyKeyboardMarkup:
     kb.button(text="🖼  Сгенерировать картинку")
     kb.button(
         text="🎞  Галерея",
-        web_app=WebAppInfo(url=f"{BASE_URL}/gallery/?uid={user_id}")
+        web_app=WebAppInfo(url=f"{settings.BASE_URL}/gallery/?uid={user_id}")
     )
     kb.button(text="ℹ️  Помощь")
     kb.button(text="⚙️  Настройки")

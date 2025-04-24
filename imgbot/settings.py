@@ -111,6 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 FOOOCUS_HOST = os.getenv('FOOOCUS_HOST')
 SECRET_KEY = os.getenv('SECRET_KEY')
+BASE_URL = os.getenv('BASE_URL')
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
