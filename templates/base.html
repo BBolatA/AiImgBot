@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Галерея{% endblock %}</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="{% static 'css/gallery.css' %}">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <!-- Гамбургер -->
+  <button id="hamburger">☰</button>
+
+  <!-- Sidebar -->
+  {% block sidebar %}
+    {% include 'includes/sidebar.html' %}
+  {% endblock %}
+
+  <!-- Main Content -->
+  <div id="main">
+    {% block main_content %}{% endblock %}
+  </div>
+
+  <!-- Lightbox -->
+  {% block lightbox %}
+    {% include 'includes/lightbox.html' %}
+  {% endblock %}
+
+  <script src="{% static 'js/gallery.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
