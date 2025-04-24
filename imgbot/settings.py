@@ -9,18 +9,17 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-1d#+obqciiyy0xi@b!59vv5f!47d+wv9mo$@(wl^d7ye8!cem8"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -74,15 +73,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "imgbot.wsgi.application"
 
-MEDIA_URL  = '/media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
 CELERY_WORKER_POOL = 'solo'
-
-# где слушает Fooocus‑API
-FOOOCUS_HOST = 'http://127.0.0.1:8888'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -113,6 +109,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+FOOOCUS_HOST = os.getenv('FOOOCUS_HOST')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -130,12 +128,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-# эта папка будет искаться при DEBUG=True до collectstatic
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-# (необязательно, но полезно для collectstatic в проде)
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type

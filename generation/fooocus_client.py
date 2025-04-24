@@ -1,15 +1,13 @@
 import asyncio
 import aiohttp
+from django.conf import settings
 
 
 class FooocusClient:
-    def __init__(self, host: str = "http://127.0.0.1:8888"):
-        self.host = host.rstrip('/')
+    def __init__(self, host: str | None = None):
+        self.host = (host or settings.backend_url).rstrip('/')
 
     async def _post(self, route: str, payload: dict) -> dict:
-        """
-        Асинхронный POST и возврат JSON-ответа.
-        """
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 f"{self.host}{route}",
@@ -27,16 +25,6 @@ class FooocusClient:
         base_model_name: str = "",
         require_base64: bool = True
     ) -> dict:
-        """
-        Генерация изображения с указанием стилей и базовой модели.
-
-        :param prompt: Текстовый запрос
-        :param qty: количество изображений
-        :param style_selections: список стилей, например ["Fooocus V2", "Fooocus Masterpiece", ...]
-        :param base_model_name: имя базовой модели, например "animaPencilXL_v100.safetensors"
-        :param require_base64: возвращать ли base64-данные
-        :return: ответ сервиса генерации
-        """
         if style_selections is None:
             style_selections = ["Fooocus V2", "Fooocus Masterpiece"]
 
