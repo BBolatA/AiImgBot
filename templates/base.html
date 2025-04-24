@@ -3,36 +3,34 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>{% block title %}Галерея{% endblock %}</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet" href="{% static 'css/gallery.css' %}">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <title>{% block title %}{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  {% block extra_head %}{% endblock %}
-  <script>
-    window.BASE_URL = "{{ BASE_URL }}";
-  </script>
+  <link rel="stylesheet" href="{% static 'css/gallery.css' %}">
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.3/photoswipe.min.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.3/default-skin/default-skin.min.css"
+  />
 </head>
 <body>
-  <!-- Гамбургер -->
+  <!-- Кнопка-гамбургер -->
   <button id="hamburger">☰</button>
 
-  <!-- Sidebar -->
-  {% block sidebar %}
-    {% include 'includes/sidebar.html' %}
-  {% endblock %}
+  <aside id="sidebar" hidden>
+    <h2>Фильтр по дате</h2>
+    <ul id="datesList"></ul>
+  </aside>
 
-  <!-- Main Content -->
-  <div id="main">
+  <main id="main">
     {% block main_content %}{% endblock %}
-  </div>
+  </main>
 
-  <!-- Lightbox -->
-  {% block lightbox %}
-    {% include 'includes/lightbox.html' %}
-  {% endblock %}
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.3/photoswipe.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.3/photoswipe-ui-default.min.js"></script>
   <script src="{% static 'js/gallery.js' %}"></script>
-  {% block extra_js %}{% endblock %}
 </body>
 </html>
