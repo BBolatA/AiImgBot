@@ -1,7 +1,11 @@
-// static/js/gallery.js
-
 (() => {
-  const BASE_URL = 'https://97ee-95-59-212-171.ngrok-free.app';
+  const rawBaseUrl = (window.BASE_URL && typeof window.BASE_URL === 'string')
+    ? window.BASE_URL.trim()
+    : '';
+  const BASE_URL = (rawBaseUrl && !rawBaseUrl.includes('{{'))
+    ? rawBaseUrl.replace(/\/$/, '')
+    : window.location.origin.replace(/\/$/, '');
+
   const params = new URLSearchParams(window.location.search);
   let uid = params.get('uid') || '';
   const tg = window.Telegram?.WebApp;
@@ -15,7 +19,6 @@
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url.replace(/^http:\/\//, 'https://');
     }
-    // Добавляем '/' если его нет
     const path = url.startsWith('/') ? url : `/${url}`;
     return `${BASE_URL}${path}`;
   }
@@ -35,7 +38,6 @@
   const btnPrev       = document.getElementById('lb-prev');
   const btnNext       = document.getElementById('lb-next');
 
-  // Гамбургер
   hamburger.addEventListener('click', () => {
     const opening = sidebar.hidden;
     sidebar.hidden = !opening;
@@ -61,7 +63,8 @@
       renderGrid(allItems);
       tg?.expand();
     })
-    .catch(() => {
+    .catch(err => {
+      console.error('Fetch error:', err);
       loader.textContent = 'Ошибка загрузки';
     });
 
@@ -125,7 +128,7 @@
     lbImg.classList.add('hide');
     setTimeout(() => {
       lbImg.src = src;
-      void lbImg.offsetWidth; // for reset animation
+      void lbImg.offsetWidth;
       lbImg.classList.remove('hide');
       lbPrompt.textContent = prompt;
       lbCreatedAt.textContent = new Date(created_at).toLocaleString();

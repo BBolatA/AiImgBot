@@ -25,7 +25,7 @@ load_dotenv(BASE_DIR / '.env')
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "97ee-95-59-212-171.ngrok-free.app",
+    "b74b-95-59-212-171.ngrok-free.app",
     "127.0.0.1",
     "localhost",
 ]
@@ -66,6 +66,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                'imgbot.context_processors.base_url',
             ],
         },
     },
