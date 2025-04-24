@@ -1,3 +1,4 @@
+import uuid
 import base64
 import binascii
 import logging
@@ -36,6 +37,8 @@ def run_generation(task_id: int) -> None:
         if not isinstance(result, list) or not result:
             raise ValueError("Fooocus вернул пустой список")
 
+        task.images.all().delete()
+
         for idx, item in enumerate(result):
             raw_bytes = None
 
@@ -55,15 +58,65 @@ def run_generation(task_id: int) -> None:
                 logger.warning("Task %s: item %s не распознан", task_id, idx)
                 continue
 
-            gi = GeneratedImage(task=task, index=idx)
-            gi.image.save(f"{task_id}_{idx}.png", ContentFile(raw_bytes), save=False)
-            gi.save()
+            filename = f"{uuid.uuid4().hex}.png"
+            GeneratedImage.objects.create(
+                task=task,
+                image=ContentFile(raw_bytes, name=filename),
+                index=idx
+            )
 
         task.status = "READY" if task.images.exists() else "ERROR"
 
     except Exception:
         logger.exception("Ошибка генерации для task %s", task_id)
         task.status = "ERROR"
+        raise
+
+    finally:
+        task.save(update_fields=["status"])
+
+
+@app.task(name="generation.tasks.generate_image")
+def generate_image(task_id: int) -> None:
+    task = GenerationTask.objects.get(pk=task_id)
+    task.status = "STARTED"
+    task.save(update_fields=["status"])
+
+    try:
+        result = client.text2img(task.prompt, task.qty)
+        if not isinstance(result, list) or not result:
+            raise ValueError("Fooocus вернул пустой список")
+
+        task.images.all().delete()
+
+        for idx, item in enumerate(result):
+            raw_bytes = None
+            if isinstance(item, dict) and item.get("base64"):
+                b64 = item["base64"].split(",", 1)[-1]
+                try:
+                    raw_bytes = base64.b64decode(b64 + "===")
+                except binascii.Error:
+                    raw_bytes = None
+            if raw_bytes is None and isinstance(item, dict) and item.get("url"):
+                resp = requests.get(item["url"], timeout=60)
+                if resp.ok:
+                    raw_bytes = resp.content
+            if raw_bytes is None:
+                logger.warning("Task %s: item %s не распознан", task_id, idx)
+                continue
+
+            filename = f"{uuid.uuid4().hex}.png"
+            GeneratedImage.objects.create(
+                task=task,
+                image=ContentFile(raw_bytes, name=filename),
+                index=idx
+            )
+
+        task.status = "READY" if task.images.exists() else "ERROR"
+
+    except Exception:
+        task.status = "ERROR"
+        logger.exception("Ошибка генерации для task %s", task_id)
         raise
 
     finally:
