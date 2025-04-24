@@ -7,9 +7,6 @@ router = Router()
 
 @router.message(Command("start"))
 async def cmd_start(message: types.Message):
-    """
-    При /start шлём меню, подставляя в него message.chat.id
-    """
     text = (
         "👋 Привет! Я AI‑генератор изображений.\n\n"
         "Выберите действие:"
@@ -21,7 +18,7 @@ async def cmd_start(message: types.Message):
 async def shortcut_img(message: types.Message):
     await message.answer(
         "Отправьте команду в формате:\n"
-        "<code>/img ваш_промпт</code>"
+        "<code>/img A close-up of a witch with intense, glowing eyes, her face partially shadowed, adorned with intricate silver jewelry and floral patterns painted on her skin, surrounded by swirling mist.</code>"
     )
 
 

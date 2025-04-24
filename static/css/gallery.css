@@ -1,5 +1,3 @@
-/* static/css/gallery.css */
-
 body {
   margin: 0;
   display: flex;
@@ -120,23 +118,60 @@ img.selected {
   justify-content: center;
   background: rgba(0,0,0,0.85);
   z-index: 1000;
+  padding: 20px;
+  overflow: auto;
 }
 
-/* Контейнер окна: центрируем содержимое */
 .lightbox-window {
   position: relative;
-  max-width: 90%;
-  max-height: 90%;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto;
   align-items: center;
+  row-gap: 12px;
+  column-gap: 10px;
+  max-width: 90%;
   box-sizing: border-box;
   padding: 0 10px;
 }
 
-/* Картинка внутри лайтбокса */
-#lightbox img,
+.lightbox-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 80vh;
+  margin-bottom: 12px;
+}
+
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 40px;
+  padding: 8px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity .2s;
+}
+.lightbox-nav:hover {
+  opacity: 1;
+}
+.lightbox-nav.prev {
+  left: 16px;
+}
+.lightbox-nav.next {
+  right: 16px;
+}
+
+/* Изображение */
+#lb-img,
 .lightbox-img {
+  grid-column: 2;
+  grid-row: 1;
   display: block;
   margin: 0 auto;
   max-width: 100%;
@@ -145,9 +180,9 @@ img.selected {
   transition: opacity .3s ease;
 }
 
-/* Новый блок с промптом и временем */
 .lightbox-details {
-  margin-top: 12px;
+  grid-column: 1 / 4;
+  grid-row: 2;
   background: rgba(255,255,255,0.05);
   padding: 10px 14px;
   border-radius: 6px;
@@ -157,6 +192,7 @@ img.selected {
   text-align: center;
   width: 100%;
   max-width: 600px;
+  margin: 0 auto;
 }
 .lightbox-details p {
   margin: 0 0 8px;
@@ -165,7 +201,6 @@ img.selected {
   margin-bottom: 0;
 }
 
-/* Кнопка закрытия */
 #lb-close,
 .lightbox-close {
   position: absolute;
@@ -181,40 +216,77 @@ img.selected {
   z-index: 1001;
 }
 #lb-close:hover,
-#lb-prev:hover,
-#lb-next:hover,
 .lightbox-close:hover {
   opacity: 1;
 }
 
-/* Навигация вперед/назад */
-#lb-prev,
-#lb-next,
-.lightbox-nav {
-  position: absolute;
-  top: 50%;
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 40px;
-  padding: 8px;
-  cursor: pointer;
-  opacity: .7;
-  transform: translateY(-50%);
-}
-#lb-prev { left: 16px; }
-#lb-next { right: 16px; }
-.lightbox-nav.prev { left: -20px; }
-.lightbox-nav.next { right: -20px; }
+@media (max-width: 600px) {
+  .lightbox-window {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 90vw !important;
+    max-width: 90vw !important;
+    padding: 8px;
+    box-sizing: border-box;
+    overflow: auto;
+  }
 
-/* Slide animations */
-@keyframes slideInLeft {
-  from { transform: translateX(-100%); opacity: 0; }
-  to   { transform: translateX(0); opacity: 1; }
+  .lightbox-content {
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  .lightbox-img {
+    width: 100%;
+    height: auto;
+    max-height: 70vh;
+    object-fit: contain;
+  }
+
+  .lightbox-nav.prev { left: 8px; }
+  .lightbox-nav.next { right: 8px; }
+
+  .lightbox-details {
+    width: 100%;
+    padding: 8px;
+    max-width: none;
+    word-break: break-word;
+    text-align: center;
+  }
 }
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to   { transform: translateX(0); opacity: 1; }
+.copy-prompt-btn {
+  margin-left: 12px;
+  padding: 4px 8px;
+  font-size: 13px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
 }
-.slide-in-left { animation: slideInLeft .3s ease-in-out; }
-.slide-in-right { animation: slideInRight .3s ease-in-out; }
+.copy-prompt-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+.copy-notification {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  z-index: 2000;
+}
+.copy-notification.show {
+  opacity: 1;
+}
