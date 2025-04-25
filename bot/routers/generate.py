@@ -135,7 +135,10 @@ async def on_qty_pick(callback: CallbackQuery, state: FSMContext):
 
     style_selections = DEFAULT_STYLES + [style_label]
     base_model_name = model_name
-
+    settings_data = await state.get_data()
+    perf = settings_data.get("quality")
+    ar = settings_data.get("resolution")
+    fmt = settings_data.get("fmt")
     try:
         task_id = await create_task(
             prompt,
@@ -143,6 +146,9 @@ async def on_qty_pick(callback: CallbackQuery, state: FSMContext):
             qty,
             style_selections,
             base_model_name,
+            performance_selection=perf,
+            aspect_ratios_selection=ar,
+            save_extension=fmt,
         )
         urls = await wait_ready(task_id)
         files = await _download_files(urls)
@@ -176,9 +182,12 @@ async def on_retry(callback: CallbackQuery, state: FSMContext):
 
     prompt = job["prompt"]
     model_name = MODEL_MAP.get(style_code, "animaPencilXL_v100.safetensors")
+    style_selections = DEFAULT_STYLES + [STYLE_OPTIONS[style_code]]
 
-    style_selections = DEFAULT_STYLES
-    base_model_name = model_name
+    # вот эти три — из state
+    perf = data.get("quality")
+    ar   = data.get("resolution")
+    fmt  = data.get("fmt")
 
     await callback.answer("Повторяем…")
 
@@ -188,7 +197,10 @@ async def on_retry(callback: CallbackQuery, state: FSMContext):
             callback.message.chat.id,
             1,
             style_selections,
-            base_model_name,
+            model_name,
+            performance_selection=perf,
+            aspect_ratios_selection=ar,
+            save_extension=fmt,
         )
         urls = await wait_ready(task_id)
         files = await _download_files(urls)

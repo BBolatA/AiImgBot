@@ -9,7 +9,10 @@ from .tasks import run_generation
 class GenerateAPIView(APIView):
     def post(self, request):
         serializer = TaskCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception:
+            raise
         task = serializer.save(status='PENDING')
         run_generation.delay(task.id)
         return Response({"task_id": task.id}, status=status.HTTP_201_CREATED)

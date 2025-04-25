@@ -15,7 +15,9 @@ class GenerationTask(models.Model):
     qty = models.PositiveSmallIntegerField(default=1)
     style_selections = models.JSONField(default=list, blank=True)
     base_model_name = models.CharField(max_length=200, blank=True)
-
+    performance_selection = models.CharField(max_length=50, null=True, blank=True)
+    aspect_ratios_selection = models.CharField(max_length=20, null=True, blank=True)
+    save_extension = models.CharField(max_length=10, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
