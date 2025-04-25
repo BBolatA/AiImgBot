@@ -23,7 +23,10 @@ class FooocusClient:
         qty: int = 1,
         style_selections: list[str] = None,
         base_model_name: str = "",
-        require_base64: bool = True
+        require_base64: bool = True,
+        performance_selection: str | None = None,
+        aspect_ratios_selection: str | None = None,
+        save_extension: str | None = None,
     ) -> dict:
         if style_selections is None:
             style_selections = ["Fooocus V2", "Fooocus Masterpiece"]
@@ -37,4 +40,11 @@ class FooocusClient:
             "style_selections": style_selections,
             "base_model_name": base_model_name,
         }
+        if performance_selection:
+            body["performance_selection"] = performance_selection
+        if aspect_ratios_selection:
+            body["aspect_ratios_selection"] = aspect_ratios_selection
+        if save_extension:
+            body["save_extension"] = save_extension
+
         return asyncio.run(self._post("/v1/generation/text-to-image", body))

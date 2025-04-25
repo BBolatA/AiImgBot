@@ -13,6 +13,15 @@ class TaskCreateSerializer(serializers.ModelSerializer):
         allow_blank=True,
         default=""
     )
+    performance_selection = serializers.CharField(
+        required=False,
+        allow_blank=True)
+    aspect_ratios_selection = serializers.CharField(
+        required=False,
+        allow_blank=True)
+    save_extension = serializers.CharField(
+        required=False,
+        allow_blank=True)
 
     class Meta:
         model = GenerationTask
@@ -22,6 +31,9 @@ class TaskCreateSerializer(serializers.ModelSerializer):
             'qty',
             'style_selections',
             'base_model_name',
+            'performance_selection',
+            'aspect_ratios_selection',
+            'save_extension',
         )
 
     def create(self, validated_data):

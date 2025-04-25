@@ -25,12 +25,18 @@ def run_generation(task_id: int) -> None:
         qty = getattr(task, "qty", 1) or 1
         style_selections = getattr(task, "style_selections", None) or ["Fooocus V2", "Fooocus Masterpiece"]
         base_model = getattr(task, "base_model_name", "") or ""
+        perf = task.performance_selection or None
+        ar = task.aspect_ratios_selection or None
+        ext = task.save_extension or None
 
         result = client.text2img(
             task.prompt,
             qty,
             style_selections=style_selections,
             base_model_name=base_model,
+            performance_selection=perf,
+            aspect_ratios_selection=ar,
+            save_extension=ext,
             require_base64=True
         )
 
@@ -83,7 +89,23 @@ def generate_image(task_id: int) -> None:
     task.save(update_fields=["status"])
 
     try:
-        result = client.text2img(task.prompt, task.qty)
+        styles = task.style_selections or ["Fooocus V2", "Fooocus Masterpiece"]
+        model = task.base_model_name or ""
+        perf = task.performance_selection or None
+        ar = task.aspect_ratios_selection or None
+        ext = task.save_extension or None
+
+        result = client.text2img(
+            task.prompt,
+            task.qty,
+            style_selections=styles,
+            base_model_name=model,
+            require_base64=False,
+            performance_selection=perf,
+            aspect_ratios_selection=ar,
+            save_extension=ext,
+        )
+
         if not isinstance(result, list) or not result:
             raise ValueError("Fooocus вернул пустой список")
 
@@ -105,7 +127,7 @@ def generate_image(task_id: int) -> None:
                 logger.warning("Task %s: item %s не распознан", task_id, idx)
                 continue
 
-            filename = f"{uuid.uuid4().hex}.png"
+            filename = f"{uuid.uuid4().hex}.{ext or 'png'}"
             GeneratedImage.objects.create(
                 task=task,
                 image=ContentFile(raw_bytes, name=filename),
