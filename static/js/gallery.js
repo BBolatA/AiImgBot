@@ -17,6 +17,18 @@
     hamburger.textContent = opening ? '×' : '☰';
   });
 
+  const io = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        img.src = img.dataset.src;
+        obs.unobserve(img);
+      }
+    });
+  }, {
+    rootMargin: '200px 0px'
+  });
+
   const loader    = document.getElementById('loader');
   const grid      = document.getElementById('grid');
   const datesList = document.getElementById('datesList');
@@ -37,41 +49,24 @@
 
   function buildSrc(url) {
     if (/^https?:\/\//.test(url)) return url.replace(/^http:\/\//, 'https://');
-    const base = (window.BASE_URL && typeof window.BASE_URL === 'string')
+    const raw = (window.BASE_URL && typeof window.BASE_URL === 'string')
       ? window.BASE_URL.trim().replace(/\/$/, '')
       : window.location.origin.replace(/\/$/, '');
-    return `${base}${url.startsWith('/') ? url : '/' + url}`;
+    return `${raw}${url.startsWith('/') ? url : '/' + url}`;
   }
 
   fetch(`${buildSrc('/api/images/')}?user_id=${encodeURIComponent(uid)}`)
     .then(res => res.ok ? res.json() : Promise.reject('network'))
     .then(data => {
-      allItems = data;
-      const promises = allItems.map(item => new Promise(resolve => {
-        const img = new Image();
-        const src = buildSrc(item.url);
-        img.src = src;
-        img.onload = () => resolve({
-          src,
-          w: img.naturalWidth,
-          h: img.naturalHeight,
-          prompt: item.prompt,
-          title: `<strong>Промпт:</strong> ${item.prompt}<br>` +
-                 `<strong>Время:</strong> ${new Date(item.created_at).toLocaleString()}`
-        });
-        img.onerror = () => resolve({
-          src,
-          w: window.innerWidth,
-          h: window.innerHeight,
-          prompt: item.prompt,
-          title: `<strong>Промпт:</strong> ${item.prompt}<br>` +
-                 `<strong>Время:</strong> ${new Date(item.created_at).toLocaleString()}`
-        });
+      allItems  = data;
+      pswpItems = data.map(item => ({
+        src:   buildSrc(item.url),
+        w:     item.width  || window.innerWidth,
+        h:     item.height || window.innerHeight,
+        prompt: item.prompt,
+        title: `<strong>Промпт:</strong> ${item.prompt}<br>` +
+               `<strong>Время:</strong> ${new Date(item.created_at).toLocaleString()}`
       }));
-      return Promise.all(promises);
-    })
-    .then(sizes => {
-      pswpItems = sizes;
       loader.remove();
       grid.hidden = false;
       initSidebar();
@@ -85,7 +80,7 @@
 
   function initSidebar() {
     const dates = [...new Set(allItems.map(i => i.created_at.split('T')[0]))]
-      .sort((a,b) => b.localeCompare(a));
+      .sort((a, b) => b.localeCompare(a));
     dates.unshift('Все');
     dates.forEach(d => {
       const li = document.createElement('li');
@@ -99,19 +94,35 @@
     });
     datesList.querySelector('li').classList.add('active');
   }
+
   function filterByDate(dateStr) {
-    const filtered = dateStr === 'Все' ? allItems : allItems.filter(i => i.created_at.split('T')[0] === dateStr);
+    const filtered = dateStr === 'Все'
+      ? allItems
+      : allItems.filter(i => i.created_at.split('T')[0] === dateStr);
     renderGrid(filtered);
   }
 
   function renderGrid(items) {
     grid.innerHTML = '';
     items.forEach((item, idx) => {
-      const div = document.createElement('div'); div.className = 'item';
-      const img = document.createElement('img'); img.src = buildSrc(item.url); img.alt = item.prompt;
-      img.onerror = () => img.classList.add('broken'); img.onclick = () => openPhotoSwipe(idx);
-      const lbl = document.createElement('div'); lbl.className = 'date-label'; lbl.textContent = item.created_at.split('T')[0];
-      div.append(img, lbl); grid.append(div);
+      const div = document.createElement('div');
+      div.className = 'item';
+
+      const img = document.createElement('img');
+      img.alt = item.prompt;
+      img.setAttribute('loading', 'lazy');
+      img.dataset.src = buildSrc(item.url);
+      img.onerror = () => img.classList.add('broken');
+      img.onclick = () => openPhotoSwipe(idx);
+
+      io.observe(img);
+
+      const lbl = document.createElement('div');
+      lbl.className = 'date-label';
+      lbl.textContent = item.created_at.split('T')[0];
+
+      div.append(img, lbl);
+      grid.append(div);
     });
   }
 
@@ -139,20 +150,31 @@
         popup.style.boxShadow = '0 2px 6px rgba(0,0,0,0.5)';
         popup.style.zIndex = 2001;
         popup.style.pointerEvents = 'auto';
-        const wa = document.createElement('div'); wa.textContent = 'WhatsApp'; wa.style.margin = '4px 0'; wa.style.cursor='pointer';
+
+        const wa = document.createElement('div');
+        wa.textContent = 'WhatsApp';
+        wa.style.margin = '4px 0';
+        wa.style.cursor = 'pointer';
         wa.onclick = () => {
-          const i = gallery.getCurrentIndex(); const item = pswpItems[i];
+          const i = gallery.getCurrentIndex();
+          const item = pswpItems[i];
           window.open(`https://wa.me/?text=${encodeURIComponent(item.prompt + ' ' + item.src)}`, '_blank');
-          document.getElementById('share-popup')?.remove();
+          popup.remove();
         };
-        const tgShare = document.createElement('div'); tgShare.textContent = 'Telegram'; tgShare.style.margin = '4px 0'; tgShare.style.cursor='pointer';
+
+        const tgShare = document.createElement('div');
+        tgShare.textContent = 'Telegram';
+        tgShare.style.margin = '4px 0';
+        tgShare.style.cursor = 'pointer';
         tgShare.onclick = () => {
-          const i = gallery.getCurrentIndex(); const item = pswpItems[i];
+          const i = gallery.getCurrentIndex();
+          const item = pswpItems[i];
           window.open(`https://t.me/share/url?url=${encodeURIComponent(item.src)}&text=${encodeURIComponent(item.prompt)}`, '_blank');
-          document.getElementById('share-popup')?.remove();
+          popup.remove();
         };
+
         popup.append(wa, tgShare);
-        document.body.appendChild(popup);
+        document.body.append(popup);
       };
       document.addEventListener('click', e => {
         const popup = document.getElementById('share-popup');
