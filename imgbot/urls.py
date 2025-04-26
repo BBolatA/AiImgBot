@@ -16,20 +16,16 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from generation import views as g
 from django.views.generic import TemplateView
-
-from generation.views import UserImagesAPIView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('api/generate/', g.GenerateAPIView.as_view()),
-    path('api/status/<int:pk>/', g.StatusAPIView.as_view()),
-    path("api/images/", UserImagesAPIView.as_view(), name="user_images"),
     path("gallery/", TemplateView.as_view(template_name="gallery.html"), name="gallery"),
+    path("generation/", include("generation.urls")),
+    path("api/v1/", include(("imgbot.api_urls", "imgbot"), namespace="api-v1")),
 ]
 
 

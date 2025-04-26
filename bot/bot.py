@@ -33,7 +33,7 @@ async def handle_img(message):
     await message.answer('🖌 Генерирую, подождите…')
 
     async with aiohttp.ClientSession() as s:
-        async with s.post(f'{BACKEND_URL}/api/generate/', json={
+        async with s.post(f'{BACKEND_URL}/api/v1/generation/generate/', json={
             'prompt': prompt,
             'tg_chat_id': message.chat.id
         }) as r:

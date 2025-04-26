@@ -8,7 +8,7 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 
 from .models import GenerationTask, GeneratedImage
-from .fooocus_client import FooocusClient
+from core.services.fooocus_client import FooocusClient
 from imgbot.celery import app
 
 logger = logging.getLogger(__name__)
