@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import GenerationTask, GeneratedImage
+from generation.models import GenerationTask, GeneratedImage
 
 
 class TaskCreateSerializer(serializers.ModelSerializer):
