@@ -184,10 +184,9 @@ async def on_retry(callback: CallbackQuery, state: FSMContext):
     model_name = MODEL_MAP.get(style_code, "animaPencilXL_v100.safetensors")
     style_selections = DEFAULT_STYLES + [STYLE_OPTIONS[style_code]]
 
-    # вот эти три — из state
     perf = data.get("quality")
-    ar   = data.get("resolution")
-    fmt  = data.get("fmt")
+    ar = data.get("resolution")
+    fmt = data.get("fmt")
 
     await callback.answer("Повторяем…")
 

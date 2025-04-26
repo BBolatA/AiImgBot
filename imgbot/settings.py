@@ -31,17 +31,30 @@ ALLOWED_HOSTS = [
 ]
 
 
-# Application definition
-
-INSTALLED_APPS = [
+# Apps
+DJANGO_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+]
+
+THIRD_PARTY_APPS = [
     'rest_framework',
+    'drf_yasg',
+]
+
+LOCAL_APPS = [
     'generation',
+    'core',
+]
+
+INSTALLED_APPS = [
+    *DJANGO_APPS,
+    *THIRD_PARTY_APPS,
+    *LOCAL_APPS,
 ]
 
 MIDDLEWARE = [
@@ -66,7 +79,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                'imgbot.context_processors.base_url',
+                'core.context_processors.base_url',
             ],
         },
     },
@@ -113,6 +126,7 @@ AUTH_PASSWORD_VALIDATORS = [
 FOOOCUS_HOST = os.getenv('FOOOCUS_HOST')
 SECRET_KEY = os.getenv('SECRET_KEY')
 BASE_URL = os.getenv('BASE_URL')
+SITE_URL = os.getenv('SITE_URL')
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

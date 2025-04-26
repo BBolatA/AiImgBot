@@ -30,7 +30,7 @@ async def create_task(
 
     async with aiohttp.ClientSession() as session:
         response = await session.post(
-            f"{settings.backend_url}/api/generate/",
+            f"{settings.backend_url}/api/v1/generation/generate/",
             json=payload
         )
         await response.text()
@@ -43,7 +43,7 @@ async def wait_ready(task_id: int) -> list[str]:
     async with aiohttp.ClientSession() as session:
         while True:
             await asyncio.sleep(2)
-            async with session.get(f"{settings.backend_url}/api/status/{task_id}/") as r:
+            async with session.get(f"{settings.backend_url}/api/v1/generation/status/{task_id}/") as r:
                 data = await r.json()
                 status = data.get("status")
                 if status == "READY":

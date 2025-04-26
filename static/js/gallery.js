@@ -55,7 +55,7 @@
     return `${raw}${url.startsWith('/') ? url : '/' + url}`;
   }
 
-  fetch(`${buildSrc('/api/images/')}?user_id=${encodeURIComponent(uid)}`)
+  fetch(`${buildSrc('/api/v1/generation/images/')}?user_id=${encodeURIComponent(uid)}`)
     .then(res => res.ok ? res.json() : Promise.reject('network'))
     .then(data => {
       allItems  = data;
