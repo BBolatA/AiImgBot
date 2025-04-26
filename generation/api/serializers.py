@@ -86,4 +86,3 @@ class UserImageSerializer(serializers.ModelSerializer):
             return int(aspect.split('*')[1])
         except (ValueError, IndexError):
             return None
-
