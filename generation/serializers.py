@@ -62,10 +62,28 @@ class UserImageSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(source='task.created_at')
     prompt = serializers.CharField(source='task.prompt', read_only=True)
 
+    width = serializers.SerializerMethodField()
+    height = serializers.SerializerMethodField()
+
     class Meta:
         model = GeneratedImage
-        fields = ('url', 'created_at', 'prompt')
+        fields = ('url', 'created_at', 'prompt', 'width', 'height')
 
     def get_url(self, obj):
         request = self.context.get('request')
         return request.build_absolute_uri(obj.image.url)
+
+    def get_width(self, obj):
+        aspect = obj.task.aspect_ratios_selection or ''
+        try:
+            return int(aspect.split('*')[0])
+        except (ValueError, IndexError):
+            return None
+
+    def get_height(self, obj):
+        aspect = obj.task.aspect_ratios_selection or ''
+        try:
+            return int(aspect.split('*')[1])
+        except (ValueError, IndexError):
+            return None
+
