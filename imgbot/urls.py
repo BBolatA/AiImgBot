@@ -21,6 +21,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
 
+from core.auth.login_view import TelegramWebAppLoginAPIView
 from generation.views import HomeView
 
 urlpatterns = [
@@ -30,6 +31,7 @@ urlpatterns = [
     path("analytics/", TemplateView.as_view(template_name="analytics.html"), name="analytics"),
     path("generation/", include("generation.urls")),
     path("api/v1/", include(("imgbot.api_urls", "imgbot"), namespace="api-v1")),
+    path("api/v1/auth/login/", TelegramWebAppLoginAPIView.as_view()),
 ]
 
 

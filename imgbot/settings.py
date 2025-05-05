@@ -64,6 +64,16 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "core.auth.bot_token_auth.BotTokenAuthentication",
+        "core.auth.jwt_backend.TelegramJWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
+
 ROOT_URLCONF = "imgbot.urls"
 
 TEMPLATES = [
@@ -124,6 +134,8 @@ FOOOCUS_HOST = os.getenv('FOOOCUS_HOST')
 SECRET_KEY = os.getenv('SECRET_KEY')
 BASE_URL = os.getenv('BASE_URL')
 SITE_URL = os.getenv('SITE_URL')
+TG_BOT_TOKEN = os.getenv("TG_TOKEN")
+BOT_INTERNAL_TOKEN = os.getenv("BOT_INTERNAL_TOKEN")
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

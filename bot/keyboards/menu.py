@@ -1,18 +1,19 @@
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
-from aiogram.types import ReplyKeyboardMarkup, WebAppInfo
+# заменили ReplyKeyboardBuilder → InlineKeyboardBuilder
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import InlineKeyboardMarkup, WebAppInfo
 from ..config import settings
 
 
-def main_menu(user_id: int) -> ReplyKeyboardMarkup:
-    kb = ReplyKeyboardBuilder()
+def main_menu() -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
 
-    kb.button(text="🖼  Сгенерировать картинку")
+    kb.button(text="🖼  Сгенерировать картинку", callback_data="gen:start")
     kb.button(
         text="🎞  Галерея",
-        web_app=WebAppInfo(url=f"{settings.base_url}/gallery/?uid={user_id}")
+        web_app=WebAppInfo(url=f"{settings.base_url}/gallery/")
     )
-    kb.button(text="ℹ️  Помощь")
-    kb.button(text="⚙️  Настройки")
+    kb.button(text="ℹ️  Помощь",    callback_data="help:show")
+    kb.button(text="⚙️  Настройки", callback_data="settings:open")
 
     kb.adjust(1)
-    return kb.as_markup(resize_keyboard=True)
+    return kb.as_markup()

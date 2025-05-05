@@ -1,15 +1,11 @@
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
 from ..keyboards.settings import (
-    main_settings_kb,
-    resolution_kb,
-    quality_kb,
-    format_kb,
-    model_kb,
-    MODELS,
+    main_settings_kb, resolution_kb, quality_kb,
+    format_kb, model_kb, MODELS,
 )
 
 router = Router()
@@ -26,10 +22,8 @@ class SettingsStates(StatesGroup):
 async def _render_menu(target, state: FSMContext):
     data = await state.get_data()
 
-    def fmt_model(key: str | None) -> str:
-        if not key:
-            return "—"
-        return MODELS.get(key, {}).get("name", key)
+    def fmt_model(key):
+        return MODELS.get(key, {}).get("name", key) if key else "—"
 
     text = (
         "⚙️ <b>Текущие настройки</b>\n"
@@ -41,39 +35,48 @@ async def _render_menu(target, state: FSMContext):
     )
 
     if isinstance(target, Message):
-        await target.answer(text, parse_mode="HTML", reply_markup=main_settings_kb())
+        await target.answer(text, parse_mode="HTML",
+                            reply_markup=main_settings_kb())
     else:  # CallbackQuery
-        await target.message.edit_text(text, parse_mode="HTML", reply_markup=main_settings_kb())
+        await target.message.edit_text(text, parse_mode="HTML",
+                                       reply_markup=main_settings_kb())
+        await target.answer()
 
 
-@router.message(F.text == "⚙️  Настройки")
-async def cmd_settings(message: Message, state: FSMContext):
-    await _render_menu(message, state)
+@router.callback_query(F.data == "settings:open")
+async def settings_open(call: CallbackQuery, state: FSMContext):
+    await _render_menu(call, state)
     await state.set_state(SettingsStates.menu)
 
 
 @router.callback_query(F.data == "chg_res")
 async def menu_to_res(cb: CallbackQuery, state: FSMContext):
-    await cb.message.edit_text("Выберите разрешение:", reply_markup=resolution_kb())
+    await cb.message.edit_text("Выберите разрешение:",
+                               reply_markup=resolution_kb())
     await state.set_state(SettingsStates.choosing_res)
+    await cb.answer()
 
 
 @router.callback_query(F.data == "chg_q")
 async def menu_to_quality(cb: CallbackQuery, state: FSMContext):
-    await cb.message.edit_text("Выберите качество:", reply_markup=quality_kb())
+    await cb.message.edit_text("Выберите качество:",
+                               reply_markup=quality_kb())
     await state.set_state(SettingsStates.choosing_q)
+    await cb.answer()
 
 
 @router.callback_query(F.data == "chg_fmt")
 async def menu_to_format(cb: CallbackQuery, state: FSMContext):
     await cb.message.edit_text("Выберите формат:", reply_markup=format_kb())
     await state.set_state(SettingsStates.choosing_fmt)
+    await cb.answer()
 
 
 @router.callback_query(F.data == "chg_model")
 async def menu_to_model(cb: CallbackQuery, state: FSMContext):
     await cb.message.edit_text("Выберите модель:", reply_markup=model_kb())
     await state.set_state(SettingsStates.choosing_model)
+    await cb.answer()
 
 
 @router.callback_query(F.data.startswith("set_res:"))
@@ -125,5 +128,5 @@ async def on_model_info(cb: CallbackQuery):
         "💡 Пример промпта:\n"
         f"<code>{cfg['example_prompt']}</code>"
     )
-    await cb.answer()
     await cb.message.answer(text, parse_mode="HTML")
+    await cb.answer()

@@ -1,6 +1,6 @@
+from aiogram import Router, F
 from aiogram.filters import Command
-from aiogram import Router, types, F
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 
 from ..keyboards.menu import main_menu
 
@@ -9,26 +9,28 @@ router = Router()
 
 @router.message(Command("start"))
 async def cmd_start(message: Message):
-    text = (
-        "👋 Привет! Я AI-генератор изображений.\n\n"
-        "Выберите действие:"
-    )
-    await message.answer(text, reply_markup=main_menu(message.chat.id))
-
-
-@router.message(F.text == "🖼  Сгенерировать картинку")
-async def shortcut_img(message: Message):
     await message.answer(
-        "Отправьте команду в формате:\n"
-        "<code>/img ваш_промпт</code>"
+        "👋 Привет! Я AI-генератор изображений.\n\nВыберите действие:",
+        reply_markup=main_menu()
     )
 
 
-@router.message(F.text == "ℹ️  Помощь")
-async def shortcut_help(message: Message):
-    await message.answer(
-        "Доступные команды:\n"
-        "• <code>/img ваш_промпт</code> — сгенерировать изображение\n"
-        "• <code>⚙️ Настройки</code> — поменять опции\n"
-        "• <code>/start</code> — в начало"
+@router.callback_query(F.data == "gen:start")
+async def cb_gen_start(call: CallbackQuery):
+    await call.message.answer(
+        "Отправьте команду в формате:\n<code>/img ваш_промпт</code>"
     )
+    await call.answer()
+
+HELP_TEXT = (
+    "Доступные команды:\n"
+    "• <code>/img ваш_промпт</code> — сгенерировать изображение\n"
+    "• ⚙️ Настройки — поменять опции\n"
+    "• <code>/start</code> — в начало"
+)
+
+
+@router.callback_query(F.data == "help:show")
+async def cb_help(call: CallbackQuery):
+    await call.message.answer(HELP_TEXT, parse_mode="HTML")
+    await call.answer()
