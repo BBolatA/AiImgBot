@@ -1,7 +1,7 @@
 import logging
 import asyncio
 from uuid import uuid4
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 import aiohttp
 from aiogram import Router, types, F
@@ -28,14 +28,8 @@ STYLE_OPTIONS: Dict[str, str] = {
     "dream": "Misc Dreamscape",
 }
 
-MODEL_MAP: Dict[str, str] = {
-    "sai": "animaPencilXL_v100.safetensors",
-    "mre": "ghostxl_v10BakedVAE.safetensors",
-    "rococo": "ghostxl_v10BakedVAE.safetensors",
-    "dream": "juggernautXL_juggXIByRundiffusion.safetensors",
-}
-
 DEFAULT_STYLES = ["Fooocus V2", "Fooocus Masterpiece"]
+DEFAULT_MODEL = "animaPencilXL_v100.safetensors"
 
 
 @router.message(Command("img"))
@@ -58,7 +52,7 @@ async def ask_style(message: types.Message, state: FSMContext):
 
     await message.answer(
         f"🎨 Выберите стиль для запроса:\n<code>{prompt}</code>",
-        reply_markup=builder.as_markup()
+        reply_markup=builder.as_markup(),
     )
 
 
@@ -83,7 +77,7 @@ async def on_style_pick(callback: CallbackQuery, state: FSMContext):
 
     await callback.message.edit_text(
         f"🔢 Сколько картинок ({STYLE_OPTIONS[style_code]}) сгенерировать?",
-        reply_markup=builder.as_markup()
+        reply_markup=builder.as_markup(),
     )
 
 
@@ -109,6 +103,15 @@ async def _download_files(urls: List[str]) -> List[BufferedInputFile]:
         return await asyncio.gather(*tasks)
 
 
+def _resolve_model(settings: dict) -> str:
+    """
+    Выбираем модель:
+    1. Если пользователь указал модель в настройках — берём её.
+    2. Иначе — дефолт.
+    """
+    return settings.get("model") or DEFAULT_MODEL
+
+
 @router.callback_query(F.data.startswith("qty:"))
 async def on_qty_pick(callback: CallbackQuery, state: FSMContext):
     parts = callback.data.split(":", 3)
@@ -126,7 +129,12 @@ async def on_qty_pick(callback: CallbackQuery, state: FSMContext):
 
     prompt = job["prompt"]
     style_label = STYLE_OPTIONS[style_code]
-    model_name = MODEL_MAP.get(style_code, "animaPencilXL_v100.safetensors")
+
+    # Настройки пользователя
+    perf = data.get("quality")
+    ar = data.get("resolution")
+    fmt = data.get("fmt")
+    model_name = _resolve_model(data)
 
     await callback.answer("Генерируем ⏳")
     await callback.message.edit_text(
@@ -134,18 +142,14 @@ async def on_qty_pick(callback: CallbackQuery, state: FSMContext):
     )
 
     style_selections = DEFAULT_STYLES + [style_label]
-    base_model_name = model_name
-    settings_data = await state.get_data()
-    perf = settings_data.get("quality")
-    ar = settings_data.get("resolution")
-    fmt = settings_data.get("fmt")
+
     try:
         task_id = await create_task(
             prompt,
             callback.message.chat.id,
             qty,
             style_selections,
-            base_model_name,
+            model_name,
             performance_selection=perf,
             aspect_ratios_selection=ar,
             save_extension=fmt,
@@ -181,12 +185,12 @@ async def on_retry(callback: CallbackQuery, state: FSMContext):
         return await callback.answer("❗️Сессия не найдена.", show_alert=True)
 
     prompt = job["prompt"]
-    model_name = MODEL_MAP.get(style_code, "animaPencilXL_v100.safetensors")
     style_selections = DEFAULT_STYLES + [STYLE_OPTIONS[style_code]]
 
     perf = data.get("quality")
     ar = data.get("resolution")
     fmt = data.get("fmt")
+    model_name = _resolve_model(data)
 
     await callback.answer("Повторяем…")
 
@@ -216,5 +220,5 @@ async def on_delete(callback: CallbackQuery):
     await callback.answer("Удалено 🗑")
     try:
         await callback.message.delete()
-    except:
+    except Exception:
         pass

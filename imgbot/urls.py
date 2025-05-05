@@ -21,9 +21,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
 
+from generation.views import HomeView
+
 urlpatterns = [
+    path("", HomeView.as_view(), name="home"),
     path("admin/", admin.site.urls),
     path("gallery/", TemplateView.as_view(template_name="gallery.html"), name="gallery"),
+    path("analytics/", TemplateView.as_view(template_name="analytics.html"), name="analytics"),
     path("generation/", include("generation.urls")),
     path("api/v1/", include(("imgbot.api_urls", "imgbot"), namespace="api-v1")),
 ]
