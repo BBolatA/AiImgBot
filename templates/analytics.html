@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Аналитика{% endblock %}
+
+{% block main_content %}
+<div id="analytics-root" data-uid="{{ uid }}" class="container">
+
+  <!-- фильтр -->
+  <div class="grid" style="
+        grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+        gap:var(--space-2);margin-bottom:var(--space-5)">
+    <button data-d="7"  class="btn">7 дней</button>
+    <button data-d="30" class="btn btn--active">30 дней</button>
+    <button data-d="0"  class="btn">всё время</button>
+  </div>
+
+  <!-- графики -->
+  <div id="charts" class="grid"
+       style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+    <div class="card"><canvas id="daily"></canvas></div>
+    <div class="card"><canvas id="styles"></canvas></div>
+    <div class="card"><canvas id="models"></canvas></div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/vendor/chart.umd.min.js' %}"></script>
+  <script src="{% static 'js/analytics.js' %}"></script>
+{% endblock %}
