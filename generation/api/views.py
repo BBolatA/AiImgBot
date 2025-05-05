@@ -1,5 +1,6 @@
 from datetime import timedelta
 from django.utils import timezone
+from rest_framework.generics import get_object_or_404
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -14,49 +15,38 @@ from django.db.models.functions import TruncDate
 class GenerateAPIView(APIView):
     def post(self, request):
         serializer = TaskCreateSerializer(data=request.data)
-        try:
-            serializer.is_valid(raise_exception=True)
-        except Exception:
-            raise
-        task = serializer.save(status='PENDING')
+        serializer.is_valid(raise_exception=True)
+
+        task = serializer.save(
+            tg_chat_id=request.tg_id,
+            status="PENDING"
+        )
         run_generation.delay(task.id)
         return Response({"task_id": task.id}, status=status.HTTP_201_CREATED)
 
 
 class StatusAPIView(APIView):
     def get(self, request, pk):
-        task = GenerationTask.objects.get(pk=pk)
-        resp = TaskStatusSerializer(task).data
-        return Response(resp)
+        task = get_object_or_404(GenerationTask, pk=pk, tg_chat_id=request.tg_id)
+        return Response(TaskStatusSerializer(task).data)
 
 
 class UserImagesAPIView(APIView):
     def get(self, request):
-        tg_id = request.GET.get("user_id")
-        if not tg_id:
-            return Response([])
-
-        images = GeneratedImage.objects.filter(
-            task__tg_chat_id=tg_id,
-            task__status='READY'
-        ).order_by('-task__created_at')
-
-        serializer = UserImageSerializer(images, many=True, context={'request': request})
-        return Response(serializer.data)
+        images = (GeneratedImage.objects
+                  .filter(task__tg_chat_id=request.tg_id, task__status="READY")
+                  .order_by("-task__created_at"))
+        return Response(UserImageSerializer(images, many=True,
+                                            context={"request": request}).data)
 
 
 class UserFullStatsAPIView(APIView):
     def get(self, request):
-        tg_id = request.GET.get("user_id")
-        period = int(request.GET.get("period", "0"))  # 0 = all
-        if not tg_id:
-            return Response([])
-
-        qs = (
-            GeneratedImage.objects
-            .filter(task__tg_chat_id=tg_id, task__status="READY")
-            .select_related("task")
-        )
+        period = int(request.GET.get("period", "0") or 0)
+        qs = GeneratedImage.objects.filter(
+            task__tg_chat_id=request.tg_id,
+            task__status="READY"
+        ).select_related("task")
         if period:
             qs = qs.filter(task__created_at__gte=timezone.now()-timedelta(days=period))
 

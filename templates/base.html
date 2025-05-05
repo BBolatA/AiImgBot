@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <title>{% block title %}AI Web-App{% endblock %}</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://telegram.org/js/telegram-web-app.js?57"></script>
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
   {% block extra_css %}{% endblock %}
 </head>
@@ -13,18 +14,17 @@
     <button id="hamburger">☰</button>
     <h1 class="logo">AI Gallery</h1>
   </header>
-
   <nav id="sidebar" hidden>
     <ul>
-      <li><a href="{% url 'home' %}{% if uid %}?uid={{ uid }}{% endif %}">🏠 Главное</a></li>
-      <li><a href="{% url 'analytics' %}{% if uid %}?uid={{ uid }}{% endif %}">📊 Аналитика</a></li>
-      <li><a href="{% url 'gallery' %}{% if uid %}?uid={{ uid }}{% endif %}">🖼 Галерея</a></li>
+      <li><a href="{% url 'home' %}">🏠 Главное</a></li>
+      <li><a href="{% url 'analytics' %}">📊 Аналитика</a></li>
+      <li><a href="{% url 'gallery' %}">🖼 Галерея</a></li>
     </ul>
   </nav>
-
-  <main id="main">{% block main_content %}{% endblock %}</main>
+  <main id="main">
+    {% block main_content %}{% endblock %}
+  </main>
   <script src="{% static 'js/main.js' %}"></script>
-  <script src="{% static 'js/uid-helper.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

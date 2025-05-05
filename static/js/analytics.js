@@ -1,34 +1,56 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   if (!window.Chart) {
     alert('Chart.js не загрузился.');
     return;
   }
 
-  const uid =
-    document.body.dataset.uid ||
-    new URLSearchParams(location.search).get('uid') ||
-    window.Telegram?.WebApp?.initDataUnsafe?.user?.id ||
-    localStorage.getItem('tg_uid') || '';
-
-  if (!uid) {
-    alert('UID не найден');
+  const tg = window.Telegram?.WebApp;
+  if (!tg) {
+    alert('Откройте из Telegram-бота');
     return;
   }
-  localStorage.setItem('tg_uid', uid);
+  tg.ready();
+  await new Promise(r => requestAnimationFrame(r));
 
-  const buttons= document.querySelectorAll('.btn, .filter button');
-  const ctxDaily= document.getElementById('daily');
-  const ctxStyles= document.getElementById('styles');
-  const ctxModels= document.getElementById('models');
+  const initData = tg.initData;
+  if (!initData) {
+    alert('Telegram не передал initData');
+    return;
+  }
+
+  async function getJwt() {
+    let token = localStorage.getItem('jwt');
+    if (token) return token;
+
+    const resp = await fetch('/api/v1/auth/login/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:   JSON.stringify({ initData })
+    });
+    if (!resp.ok) {
+      alert(`Ошибка авторизации ${resp.status}`);
+      throw new Error('auth');
+    }
+    token = (await resp.json()).token;
+    localStorage.setItem('jwt', token);
+    return token;
+  }
+
+  const JWT = await getJwt();
+  const AUTH_HEADERS = { Authorization: `Bearer ${JWT}` };
+
+  const buttons = document.querySelectorAll('.btn, .filter button');
+  const ctxDaily = document.getElementById('daily');
+  const ctxStyles = document.getElementById('styles');
+  const ctxModels = document.getElementById('models');
 
   let chartDaily, chartStyles, chartModels;
 
-  const apiUrl = days =>
-    `/api/v1/generation/full_stats/?user_id=${uid}&period=${days}`;
+  const apiUrl = days => `/api/v1/generation/full_stats/?period=${days}`;
 
   async function fetchData(days) {
     try {
-      const response = await fetch(apiUrl(days));
+      const response = await fetch(apiUrl(days), { headers: AUTH_HEADERS });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const json = await response.json();
       draw(json);
@@ -65,7 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
       card.querySelectorAll('.my-legend').forEach(el => el.remove());
       const ul = document.createElement('ul');
       ul.className = 'my-legend';
-      ul.style.cssText = 'list-style:none;padding:0;margin:16px 0 0;font-size:13px;line-height:1.4';
+      ul.style.cssText =
+        'list-style:none;padding:0;margin:16px 0 0;font-size:13px;line-height:1.4';
       const meta = chart.getDatasetMeta(0);
       chart.data.labels.forEach((lbl, i) => {
         const li = document.createElement('li');

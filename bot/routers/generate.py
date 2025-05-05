@@ -1,7 +1,7 @@
 import logging
 import asyncio
 from uuid import uuid4
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 import aiohttp
 from aiogram import Router, types, F
@@ -104,11 +104,6 @@ async def _download_files(urls: List[str]) -> List[BufferedInputFile]:
 
 
 def _resolve_model(settings: dict) -> str:
-    """
-    Выбираем модель:
-    1. Если пользователь указал модель в настройках — берём её.
-    2. Иначе — дефолт.
-    """
     return settings.get("model") or DEFAULT_MODEL
 
 
@@ -129,8 +124,6 @@ async def on_qty_pick(callback: CallbackQuery, state: FSMContext):
 
     prompt = job["prompt"]
     style_label = STYLE_OPTIONS[style_code]
-
-    # Настройки пользователя
     perf = data.get("quality")
     ar = data.get("resolution")
     fmt = data.get("fmt")
@@ -154,7 +147,7 @@ async def on_qty_pick(callback: CallbackQuery, state: FSMContext):
             aspect_ratios_selection=ar,
             save_extension=fmt,
         )
-        urls = await wait_ready(task_id)
+        urls = await wait_ready(task_id, callback.message.chat.id)
         files = await _download_files(urls)
     except Exception as e:
         logger.exception("Generation error")
@@ -205,7 +198,7 @@ async def on_retry(callback: CallbackQuery, state: FSMContext):
             aspect_ratios_selection=ar,
             save_extension=fmt,
         )
-        urls = await wait_ready(task_id)
+        urls = await wait_ready(task_id, callback.message.chat.id)
         files = await _download_files(urls)
     except Exception as e:
         logger.exception("Retry error")
