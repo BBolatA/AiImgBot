@@ -61,13 +61,20 @@ class UserImageSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(source='task.created_at')
     prompt = serializers.CharField(source='task.prompt', read_only=True)
-
+    style = serializers.ListField(source='task.style_selections', read_only=True)
+    model = serializers.CharField(source='task.base_model_name', read_only=True)
+    performance = serializers.CharField(source='task.performance_selection', read_only=True)
+    aspect = serializers.CharField(source='task.aspect_ratios_selection', read_only=True)
     width = serializers.SerializerMethodField()
     height = serializers.SerializerMethodField()
 
     class Meta:
         model = GeneratedImage
-        fields = ('url', 'created_at', 'prompt', 'width', 'height')
+        fields = (
+            'url', 'created_at', 'prompt',
+            'model', 'style', 'performance', 'aspect',
+            'width', 'height',
+        )
 
     def get_url(self, obj):
         request = self.context.get('request')
