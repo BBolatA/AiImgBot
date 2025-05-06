@@ -22,48 +22,20 @@
 
   <section class="grid" style="margin-top:var(--space-7)">
     <div class="card card--sm">
-      <div class="card__num">{{ total_images|default:"0" }}</div>
+      <div class="card__num" data-total>0</div>   
       <div class="card__title">всего изображений</div>
     </div>
     <div class="card card--sm">
-      <div class="card__num">
-        {% if avg_per_day %}{{ avg_per_day|floatformat:1 }}{% else %}0{% endif %}
-      </div>
+      <div class="card__num" data-avg>0</div> 
       <div class="card__title">среднее в день</div>
     </div>
   </section>
-
-  {% if last_images %}
-  <section style="margin-top:var(--space-7)">
-    <h3 class="card__title" style="margin-bottom:var(--space-3)">
-      Последние генерации
-    </h3>
-    <div class="grid grid--cols-tight">
-      {% for img in last_images %}
-        <img class="thumb"
-             data-src="{{ img.image.url }}"
-             alt="{{ img.task.prompt|truncatechars:40 }}"
-             loading="lazy"
-             onclick="location.href='{% url 'gallery' %}'">
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
+    
+  <section id="last" class="grid grid--cols-tight"
+         style="margin-top:var(--space-7)"></section>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-const io = new IntersectionObserver((entries, obs) =>
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      const img = e.target;
-      img.src = img.dataset.src;
-      obs.unobserve(img);
-    }
-  }),
-  { rootMargin: '200px' }
-);
-document.querySelectorAll('[data-src]').forEach(img => io.observe(img));
-</script>
+<script src="{% static 'js/home.js' %}"></script>
 {% endblock %}
