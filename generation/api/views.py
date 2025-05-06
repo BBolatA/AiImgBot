@@ -33,11 +33,15 @@ class StatusAPIView(APIView):
 
 class UserImagesAPIView(APIView):
     def get(self, request):
+        limit = int(request.GET.get("limit", "0") or 0)
         images = (GeneratedImage.objects
                   .filter(task__tg_chat_id=request.tg_id, task__status="READY")
                   .order_by("-task__created_at"))
-        return Response(UserImageSerializer(images, many=True,
-                                            context={"request": request}).data)
+        if limit:
+            images = images[:limit]
+        ser = UserImageSerializer(images, many=True,
+                                  context={"request": request})
+        return Response(ser.data)
 
 
 class UserFullStatsAPIView(APIView):
