@@ -1,5 +1,6 @@
 from datetime import timedelta
 from django.utils import timezone
+from rest_framework.filters import OrderingFilter
 from rest_framework.generics import get_object_or_404
 
 from rest_framework.views import APIView
@@ -32,15 +33,33 @@ class StatusAPIView(APIView):
 
 
 class UserImagesAPIView(APIView):
+    filter_backends = [OrderingFilter]
+    ordering_fields = ['task__created_at']
+
     def get(self, request):
-        limit = int(request.GET.get("limit", "0") or 0)
-        images = (GeneratedImage.objects
-                  .filter(task__tg_chat_id=request.tg_id, task__status="READY")
-                  .order_by("-task__created_at"))
+        qs = (GeneratedImage.objects
+              .filter(task__tg_chat_id=request.tg_id,
+                      task__status="READY"))
+
+        if m := request.GET.get('model'):
+            qs = qs.filter(task__base_model_name=m)
+
+        if perf := request.GET.get('performance'):
+            qs = qs.filter(task__performance_selection=perf)
+
+        if aspect := request.GET.get('aspect'):
+            qs = qs.filter(task__aspect_ratios_selection=aspect)
+
+        if style := request.GET.get('style'):
+            qs = qs.filter(task__style_selections__contains=[style])
+
+        qs = qs.order_by('-task__created_at')
+
+        limit = int(request.GET.get('limit') or 0)
         if limit:
-            images = images[:limit]
-        ser = UserImageSerializer(images, many=True,
-                                  context={"request": request})
+            qs = qs[:limit]
+
+        ser = UserImageSerializer(qs, many=True, context={'request': request})
         return Response(ser.data)
 
 
