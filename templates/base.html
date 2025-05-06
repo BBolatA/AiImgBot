@@ -6,24 +6,39 @@
   <title>{% block title %}AI Web-App{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://telegram.org/js/telegram-web-app.js?57"></script>
+
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
   {% block extra_css %}{% endblock %}
 </head>
 <body>
   <header class="topbar">
-    <button id="hamburger">☰</button>
     <h1 class="logo">AI Gallery</h1>
   </header>
-  <nav id="sidebar" hidden>
-    <ul>
-      <li><a href="{% url 'home' %}">🏠 Главное</a></li>
-      <li><a href="{% url 'analytics' %}">📊 Аналитика</a></li>
-      <li><a href="{% url 'gallery' %}">🖼 Галерея</a></li>
-    </ul>
-  </nav>
+
   <main id="main">
     {% block main_content %}{% endblock %}
   </main>
+
+  <nav class="bottom-nav">
+    <a href="{% url 'home' %}"        class="nav-item" data-page="home">
+      <span class="nav-ico">🏠</span>
+      <span class="nav-label">Главная</span>
+    </a>
+    <a href="{% url 'gallery' %}"     class="nav-item" data-page="gallery">
+      <span class="nav-ico">🖼</span>
+      <span class="nav-label">Галерея</span>
+    </a>
+    <a href="{% url 'analytics' %}"   class="nav-item" data-page="analytics">
+      <span class="nav-ico">📊</span>
+      <span class="nav-label">Аналитика</span>
+    </a>
+    <a href="tg://resolve?domain={{ TELEGRAM_BOT_USERNAME }}"
+       class="nav-item" data-page="bot">
+      <span class="nav-ico">🤖</span>
+      <span class="nav-label">Бот</span>
+    </a>
+  </nav>
+
   <script src="{% static 'js/main.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>

@@ -5,48 +5,44 @@
 
 {% block extra_css %}
   <link rel="stylesheet" href="{% static 'css/gallery.css' %}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.3/photoswipe.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.3/default-skin/default-skin.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
 {% endblock %}
 
 {% block main_content %}
   <div id="loader">Загружаем…</div>
   <div id="grid" hidden></div>
 
-  <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="pswp__bg"></div>
-    <div class="pswp__scroll-wrap">
-      <div class="pswp__container">
-        <div class="pswp__item"></div>
-        <div class="pswp__item"></div>
-        <div class="pswp__item"></div>
+  <button id="filterBtn" class="fab-filter" title="Фильтр" aria-label="Фильтр">
+    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+        <polygon points="3 4 21 4 14 12 14 19 10 21 10 12 3 4"/>
+    </svg>
+  </button>
+  <div id="filterSheet" hidden>
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+    
+      <div class="sheet-header">
+        <button id="sheetReset" class="sheet-reset" disabled>Сброс</button>
+        <button id="sheetClose" class="sheet-close" aria-label="Закрыть">✕</button>
       </div>
-      <div class="pswp__ui pswp__ui--hidden">
-        <div class="pswp__top-bar">
-          <div class="pswp__counter"></div>
-          <button class="pswp__button pswp__button--close" title="Закрыть (Esc)"></button>
-          <button class="pswp__button pswp__button--share" title="Поделиться"></button>
-          <button class="pswp__button pswp__button--fs" title="Полноэкранный режим"></button>
-          <button class="pswp__button pswp__button--zoom" title="Зум"></button>
-          <div class="pswp__preloader">
-            <div class="pswp__preloader__icn">
-              <div class="pswp__preloader__cut">
-                <div class="pswp__preloader__donut"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <button class="pswp__button pswp__button--arrow--left" title="Назад"></button>
-        <button class="pswp__button pswp__button--arrow--right" title="Вперёд"></button>
-        <div class="pswp__caption">
-          <div class="pswp__caption__center"></div>
-        </div>
-      </div>
+    
+      <div id="sheetTabs" class="sheet-tabs"></div>
+    
+      <ul id="sheetOptions" class="sheet-options"></ul>
+    </div>
+  </div>
+
+  <div id="filterPopup" hidden>
+    <div class="filter-window">
+      <h3>Фильтр по дате</h3>
+      <ul id="datesList"></ul>
     </div>
   </div>
 {% endblock %}
+
 {% block extra_js %}
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.3/photoswipe.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/4.1.3/photoswipe-ui-default.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
   <script src="{% static 'js/gallery.js' %}"></script>
 {% endblock %}
