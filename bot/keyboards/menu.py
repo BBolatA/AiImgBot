@@ -1,4 +1,3 @@
-# заменили ReplyKeyboardBuilder → InlineKeyboardBuilder
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardMarkup, WebAppInfo
 from ..config import settings

@@ -14,10 +14,12 @@ from django.utils import timezone as tz
 
 from .models import GenerationTask, GeneratedImage
 from core.services.fooocus_client import FooocusClient
+from core.services.agent import load_styles
 
 from celery.schedules import crontab
 from imgbot.celery import app
 from generation.models import DailyPrompt
+
 
 logger = logging.getLogger(__name__)
 client = FooocusClient(settings.FOOOCUS_HOST)
@@ -31,23 +33,41 @@ def run_generation(task_id: int) -> None:
     task.save(update_fields=["status"])
 
     try:
-        qty = getattr(task, "qty", 1) or 1
-        style_selections = getattr(task, "style_selections", None) or ["Fooocus V2", "Fooocus Masterpiece"]
-        base_model = getattr(task, "base_model_name", "") or ""
+        qty = task.qty or 1
+        style_selections = task.style_selections or ["Fooocus V2", "Fooocus Masterpiece"]
+        base_model = task.base_model_name or ""
         perf = task.performance_selection or None
         ar = task.aspect_ratios_selection or None
         ext = task.save_extension or None
-
-        result = client.text2img(
-            task.prompt,
-            qty,
+        style_meta = load_styles().get(style_selections[0]) if style_selections else None
+        pos_prompt = (
+            style_meta["prompt"].format(prompt=task.prompt) if style_meta else task.prompt
+        )
+        neg_prompt = style_meta.get("negative_prompt", "") if style_meta else ""
+        kwargs = dict(
+            prompt=pos_prompt,
+            qty=qty,
             style_selections=style_selections,
             base_model_name=base_model,
             performance_selection=perf,
             aspect_ratios_selection=ar,
             save_extension=ext,
-            require_base64=True
+            require_base64=True,
         )
+        if neg_prompt:
+            kwargs["negative_prompt"] = neg_prompt
+
+        try:
+            result = client.text2img(**kwargs)
+        except TypeError as e:
+            if "negative_prompt" in str(e):
+                logger.warning(
+                    "FooocusClient.text2img() не поддерживает negative_prompt – повтор без него"
+                )
+                kwargs.pop("negative_prompt", None)
+                result = client.text2img(**kwargs)
+            else:
+                raise
 
         if not isinstance(result, list) or not result:
             raise ValueError("Fooocus вернул пустой список")
@@ -73,11 +93,11 @@ def run_generation(task_id: int) -> None:
                 logger.warning("Task %s: item %s не распознан", task_id, idx)
                 continue
 
-            filename = f"{uuid.uuid4().hex}.png"
+            filename = f"{uuid.uuid4().hex}.{ext or 'png'}"
             GeneratedImage.objects.create(
                 task=task,
                 image=ContentFile(raw_bytes, name=filename),
-                index=idx
+                index=idx,
             )
 
         task.status = "READY" if task.images.exists() else "ERROR"
