@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from generation.models import GenerationTask, GeneratedImage
+from generation.models import GenerationTask, GeneratedImage, DailyPrompt
 
 
 class TaskCreateSerializer(serializers.ModelSerializer):
@@ -93,3 +93,15 @@ class UserImageSerializer(serializers.ModelSerializer):
             return int(aspect.split('*')[1])
         except (ValueError, IndexError):
             return None
+
+
+class DailyPromptSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DailyPrompt
+        fields = ("date", "emoji", "prompt")
+
+
+class QueueTaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GenerationTask
+        fields = ("id", "prompt", "status", "created_at")

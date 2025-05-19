@@ -29,3 +29,12 @@ class GeneratedImage(models.Model):
     )
     image = models.ImageField(upload_to="fooocus/")
     index = models.PositiveSmallIntegerField()
+
+
+class DailyPrompt(models.Model):
+    date = models.DateField(unique=True)
+    emoji = models.CharField(max_length=4, default="💡")
+    prompt = models.TextField()
+
+    class Meta:
+        ordering = ["-date"]

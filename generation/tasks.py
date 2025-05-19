@@ -2,17 +2,26 @@ import uuid
 import base64
 import binascii
 import logging
+import random
+from pathlib import Path
+from datetime import timedelta
+
 import requests
 
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.utils import timezone as tz
 
 from .models import GenerationTask, GeneratedImage
 from core.services.fooocus_client import FooocusClient
+
+from celery.schedules import crontab
 from imgbot.celery import app
+from generation.models import DailyPrompt
 
 logger = logging.getLogger(__name__)
 client = FooocusClient(settings.FOOOCUS_HOST)
+PROMPTS = [p.strip() for p in Path("prompts.txt").read_text().splitlines() if p.strip()]
 
 
 @app.task(name="generation.tasks.run_generation")
@@ -143,3 +152,24 @@ def generate_image(task_id: int) -> None:
 
     finally:
         task.save(update_fields=["status"])
+
+
+@app.on_after_finalize.connect
+def setup_daily_prompt(sender, **_):
+    sender.add_periodic_task(
+        crontab(hour=2, minute=0),
+        create_prompt_of_day.s(),
+        name="daily_prompt",
+    )
+
+
+@app.task
+def create_prompt_of_day():
+    if not PROMPTS:
+        return
+    tomorrow = tz.localdate() + timedelta(days=1)
+    if DailyPrompt.objects.filter(date=tomorrow).exists():
+        return
+    text = random.choice(PROMPTS)
+    emoji = "💡"
+    DailyPrompt.objects.create(date=tomorrow, emoji=emoji, prompt=text)

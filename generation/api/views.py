@@ -6,8 +6,9 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import TaskCreateSerializer, TaskStatusSerializer, UserImageSerializer
-from generation.models import GenerationTask, GeneratedImage
+from .serializers import TaskCreateSerializer, TaskStatusSerializer, UserImageSerializer, DailyPromptSerializer, \
+    QueueTaskSerializer
+from generation.models import GenerationTask, GeneratedImage, DailyPrompt
 from generation.tasks import run_generation
 from django.db.models import Count
 from django.db.models.functions import TruncDate
@@ -88,10 +89,40 @@ class UserFullStatsAPIView(APIView):
               .annotate(c=Count("id")).order_by("-c")[:10]
         )
 
+        day_to_count = {r["d"]: r["c"] for r in by_date}
+        streak = 0
+        d = timezone.localdate()
+        while day_to_count.get(d, 0):
+            streak += 1
+            d -= timedelta(days=1)
+
         def fmt(qs, k): return [{"label": r[k] or "—", "count": r["c"]} for r in qs]
 
         return Response({
             "by_date":  [{"date": str(r["d"]), "count": r["c"]} for r in by_date],
             "by_style": fmt(by_style, "task__style_selections"),
             "by_model": fmt(by_model, "task__base_model_name"),
+            "streak": streak,
         })
+
+
+class DailyPromptAPIView(APIView):
+    permission_classes = []
+
+    def get(self, _):
+        today = timezone.localdate()
+        obj = DailyPrompt.objects.filter(date=today).first()
+        if not obj:
+            # fallback: взять случайный из истории
+            obj = DailyPrompt.objects.order_by("?").first()
+        return Response(DailyPromptSerializer(obj).data)
+
+
+class QueueAPIView(APIView):
+    """GET /api/v1/generation/queue/   (только для своего tg_id)"""
+    def get(self, request):
+        qs = GenerationTask.objects.filter(
+            tg_chat_id=request.tg_id,
+            status__in=["PENDING", "STARTED"],
+        ).order_by("created_at")
+        return Response(QueueTaskSerializer(qs, many=True).data)

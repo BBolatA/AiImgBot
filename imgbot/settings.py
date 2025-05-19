@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from pathlib import Path
+
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -100,6 +102,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
 CELERY_WORKER_POOL = 'solo'
+CELERY_ENABLE_UTC = False
+CELERY_TIMEZONE = "Asia/Almaty"
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -136,6 +140,7 @@ BASE_URL = os.getenv('BASE_URL')
 SITE_URL = os.getenv('SITE_URL')
 TG_BOT_TOKEN = os.getenv("TG_TOKEN")
 BOT_INTERNAL_TOKEN = os.getenv("BOT_INTERNAL_TOKEN")
+TELEGRAM_BOT_USERNAME = os.getenv("TELEGRAM_BOT_USERNAME")
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
