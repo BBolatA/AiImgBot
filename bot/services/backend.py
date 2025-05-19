@@ -23,19 +23,22 @@ async def create_task(
     prompt: str,
     chat_id: int,
     qty: int,
-    style_selections: list[str],
-    base_model_name: str,
+    style_selections: list[str] | None = None,
+    base_model_name: str | None = None,
     performance_selection: str | None = None,
     aspect_ratios_selection: str | None = None,
     save_extension: str | None = None,
 ) -> int:
     payload: dict = {
-        "prompt": prompt,
+        "query": prompt,
         "tg_chat_id": chat_id,
         "qty": qty,
-        "style_selections": style_selections,
-        "base_model_name": base_model_name,
     }
+
+    if style_selections:
+        payload["style_selections"] = style_selections
+    if base_model_name:
+        payload["base_model_name"] = base_model_name
     if performance_selection:
         payload["performance_selection"] = performance_selection
     if aspect_ratios_selection:

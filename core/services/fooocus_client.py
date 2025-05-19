@@ -20,6 +20,7 @@ class FooocusClient:
     def text2img(
         self,
         prompt: str,
+        negative_prompt: str,
         qty: int = 1,
         style_selections: list[str] = None,
         base_model_name: str = "",
@@ -33,6 +34,7 @@ class FooocusClient:
 
         body = {
             "prompt": prompt,
+            "negative_prompt": negative_prompt,
             "image_number": qty,
             "image_seed": -1,
             "require_base64": require_base64,

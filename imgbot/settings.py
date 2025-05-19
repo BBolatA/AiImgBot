@@ -141,6 +141,7 @@ SITE_URL = os.getenv('SITE_URL')
 TG_BOT_TOKEN = os.getenv("TG_TOKEN")
 BOT_INTERNAL_TOKEN = os.getenv("BOT_INTERNAL_TOKEN")
 TELEGRAM_BOT_USERNAME = os.getenv("TELEGRAM_BOT_USERNAME")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

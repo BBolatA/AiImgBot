@@ -1,42 +1,56 @@
 from rest_framework import serializers
+
+from core.services.agent import load_styles, nearest_style, generate, ALLOWED_RES
+from core.services.model_alias import MODEL_ALIAS
 from generation.models import GenerationTask, GeneratedImage, DailyPrompt
 
 
 class TaskCreateSerializer(serializers.ModelSerializer):
-    style_selections = serializers.ListField(
-        child=serializers.CharField(),
-        required=False,
-        default=["Fooocus V2", "Fooocus Masterpiece"]
-    )
-    base_model_name = serializers.CharField(
-        required=False,
-        allow_blank=True,
-        default=""
-    )
-    performance_selection = serializers.CharField(
-        required=False,
-        allow_blank=True)
-    aspect_ratios_selection = serializers.CharField(
-        required=False,
-        allow_blank=True)
-    save_extension = serializers.CharField(
-        required=False,
-        allow_blank=True)
+    query = serializers.CharField(write_only=True)
+    qty = serializers.IntegerField(required=False, min_value=1, default=1)
 
     class Meta:
         model = GenerationTask
         fields = (
-            'prompt',
-            'tg_chat_id',
-            'qty',
-            'style_selections',
-            'base_model_name',
-            'performance_selection',
-            'aspect_ratios_selection',
-            'save_extension',
+            "query", "tg_chat_id", "qty",
+            "style_selections", "base_model_name",
+            "performance_selection", "aspect_ratios_selection", "save_extension",
         )
+        extra_kwargs = {fld: {"required": False} for fld in (
+            "style_selections", "base_model_name",
+            "performance_selection", "aspect_ratios_selection", "save_extension",
+        )}
 
     def create(self, validated_data):
+        raw_query: str = validated_data.pop("query")
+        agent_out = generate(raw_query)
+        validated_data["prompt"] = agent_out["prompt"]
+        raw_styles = agent_out["style"]
+        if isinstance(raw_styles, str):
+            raw_styles = [raw_styles]
+
+        known_styles = load_styles()
+        resolved = [s for s in raw_styles if s in known_styles]
+        if not resolved:
+            resolved.append(nearest_style(raw_query))
+        validated_data["style_selections"] = resolved
+
+        model_alias = (
+            agent_out.get("model", "")
+            .lower().replace(" ", "").replace("_", "-")
+        )
+        model_file = MODEL_ALIAS.get(model_alias)
+        if model_file:
+            validated_data["base_model_name"] = model_file
+        else:
+            validated_data.pop("base_model_name", None)
+
+        res = str(agent_out.get("resolution", ""))
+        if res in ALLOWED_RES:
+            validated_data["aspect_ratios_selection"] = res
+        else:
+            validated_data.pop("aspect_ratios_selection", None)
+
         return GenerationTask.objects.create(**validated_data)
 
 
