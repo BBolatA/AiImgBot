@@ -5,37 +5,44 @@
 
 {% block main_content %}
 <div class="container">
-  <section class="grid grid--cols-auto">
-    <a class="card" href="{% url 'gallery' %}">
-      <span style="font-size:48px">🖼</span>
-      <span class="card__title">Галерея</span>
-    </a>
-    <a class="card" href="{% url 'analytics' %}">
-      <span style="font-size:48px">📊</span>
-      <span class="card__title">Аналитика</span>
-    </a>
-    <a class="card" href="tg://resolve?domain={{ TELEGRAM_BOT_USERNAME }}" target="_blank">
-      <span style="font-size:48px">🤖</span>
-      <span class="card__title">Открыть бота</span>
-    </a>
+
+  {# ───────── 1. ВДОХНОВЕНИЕ ДНЯ ───────── #}
+  <section id="daily" class="daily">
+    <div class="daily__emoji" id="dailyEmoji">💡</div>
+    <div class="daily__prompt" id="dailyPrompt">Загружаем…</div>
+    <button id="dailyGen" class="btn btn--primary">Сгенерировать</button>
   </section>
 
+  {# ───────── 2. ОЧЕРЕДЬ ЗАДАЧ ───────── #}
+  <h3 style="margin-top:var(--space-6)">⏳ Очередь задач</h3>
+  <ul id="queue" class="queue"></ul>
+
+  {# ───────── 3. СТАТИСТИКА ───────── #}
   <section class="grid" style="margin-top:var(--space-7)">
     <div class="card card--sm">
-      <div class="card__num" data-total>0</div>   
+      <div class="card__num" data-total>0</div>
       <div class="card__title">всего изображений</div>
     </div>
     <div class="card card--sm">
-      <div class="card__num" data-avg>0</div> 
+      <div class="card__num" data-avg>0</div>
       <div class="card__title">среднее в день</div>
     </div>
+    <div class="card card--sm">
+      <div class="card__num" data-streak>0</div>
+      <div class="card__title">дней подряд</div>
+    </div>
   </section>
-    
-  <section id="last" class="grid grid--cols-tight"
-         style="margin-top:var(--space-7)"></section>
+
+  {# ───────── 4. ПОСЛЕДНИЕ 3 КАРТИНКИ ───────── #}
+  <h3 style="margin-top:var(--space-6)">📸 Последние изображения</h3>
+  <section id="last" class="grid grid--cols-tight" style="margin-top:var(--space-3)"></section>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/home.js' %}"></script>
+  <script>
+    window.TELEGRAM_BOT_USERNAME = "{{ TELEGRAM_BOT_USERNAME }}";
+  </script>
+  <script src="{% static 'js/home.js' %}"></script>
 {% endblock %}

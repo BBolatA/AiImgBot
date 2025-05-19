@@ -1,4 +1,7 @@
-import hashlib, hmac, logging, urllib.parse
+import hashlib
+import hmac
+import logging
+import urllib.parse
 from django.conf import settings
 from rest_framework.exceptions import AuthenticationFailed
 
