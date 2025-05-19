@@ -21,6 +21,10 @@
   --step-4 :1.602rem;
 
   --safe-bottom:0px;
+
+  --radius-md : 12px;
+  --radius-lg : 20px;
+  --shadow    : 0 2px 6px rgba(0,0,0,.4);
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -80,13 +84,21 @@ body.sidebar-open #sidebar{transform:none}
 .card__num  {font-size:var(--step-3);color:var(--accent);font-weight:600}
 
 .btn{
-  background:var(--gray-700);border:1px solid var(--gray-600);
-  color:#fff;border-radius:6px;cursor:pointer;
-  padding:var(--space-2) var(--space-3);font-size:var(--step--1);
-  transition:background .15s;
+  background:var(--gray-700);
+  border:1px solid var(--gray-600);
+  color:#fff;
+  border-radius:6px;
+  cursor:pointer;
+  padding:var(--space-2) var(--space-3);
+  font-size:var(--step--1);
+  transition:background .15s, transform .1s;
 }
-.btn:hover   {background:var(--gray-600)}
-.btn--active {background:var(--accent);border-color:var(--accent);color:#000}
+.btn:hover   {background:var(--gray-600);}
+.btn:active  {transform:scale(.97);}
+.btn--primary{
+  background:var(--accent);border-color:var(--accent);color:#000;
+}
+.btn--primary:hover{filter:brightness(1.1);}
 
 .grid--cols-tight > img,
 .grid--cols-tight .thumb{
@@ -155,4 +167,67 @@ body.sidebar-open #sidebar{transform:none}
 
 main#main{
   padding-bottom:calc(84px + var(--safe-bottom));
+}
+
+.daily{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:var(--space-3);
+  align-items:center;
+  padding:var(--space-4);
+  background:var(--gray-700);
+  border-radius:var(--radius-md);
+  box-shadow:var(--shadow);
+}
+@media(max-width:480px){ .daily{grid-template-columns:1fr;} .daily__emoji{display:none;} }
+.daily__emoji  {font-size:32px;line-height:1;}
+.daily__prompt {font-size:var(--step--1);line-height:1.4;}
+
+/* ───────── ОЧЕРЕДЬ ЗАДАЧ ───────── */
+.queue{list-style:none;padding:0;margin:0;}
+.queue li{
+  display:flex;align-items:center;gap:4px;
+  background:var(--gray-700);
+  border:1px solid var(--gray-600);
+  border-radius:var(--radius-md);
+  padding:var(--space-2) var(--space-3);
+  margin-bottom:var(--space-2);
+  font-size:var(--step--1);
+  word-break:normal;
+  animation:fadeIn .3s ease;
+}
+.queue-status{
+  min-width:68px;             /* фиксированное «поле» под статус */
+  white-space:nowrap;         /* запрещаем перенос */
+}
+.queue-dash{                  /* маленький тире-разделитель */
+  padding:0 2px;
+  color:var(--text-muted,#999);
+}
+.queue-status.PENDING {color:#facc15;}  /* жёлтый */
+.queue-status.STARTED {color:#f97316;}  /* оранжевый */
+.queue-prompt{
+  flex:1;                     /* занимает оставшееся */
+  overflow:hidden;
+  text-overflow:ellipsis;     /* 'A serene Zen garden…' */
+  white-space:nowrap;         /* всё в одну строку */
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)} to{opacity:1;}}
+
+/* ───────── МИНИАТЮРЫ ───────── */
+.thumb{
+  transition:transform .15s;box-shadow:var(--shadow);
+}
+.thumb:hover{transform:scale(1.04);}
+
+/* ───────── СВЕТЛАЯ ТЕМА (по желанию) ───────── */
+@media (prefers-color-scheme: light){
+  :root{
+    --gray-900:#f5f5f5;--gray-800:#fafafa;--gray-700:#fff;--gray-600:#e4e4e4;
+    --text:#111;
+    --shadow:0 2px 6px rgba(0,0,0,.1);
+  }
+  body{color:var(--text);}
+  .card,.daily,.queue li{color:var(--text);}
+  .nav-item{color:var(--text);}
 }

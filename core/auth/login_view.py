@@ -1,4 +1,7 @@
-import datetime, json, jwt, logging
+import datetime
+import json
+import jwt
+import logging
 from django.conf import settings
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
@@ -11,7 +14,7 @@ log = logging.getLogger(__name__)
 
 class TelegramWebAppLoginAPIView(APIView):
     authentication_classes = []
-    permission_classes     = [AllowAny]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         raw_init = request.data.get("initData", "")
